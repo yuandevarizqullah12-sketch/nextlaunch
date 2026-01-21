@@ -33,7 +33,7 @@
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
         }
         
         ::-webkit-scrollbar-track {
@@ -67,7 +67,7 @@
         
         /* Header */
         header {
-            padding: 1rem 2rem;
+            padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -159,10 +159,29 @@
             transform: translateY(-2px);
         }
         
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            z-index: 101;
+        }
+        
+        .mobile-menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
         /* Main Layout */
         .main-container {
             display: flex;
             height: calc(100vh - 70px);
+            position: relative;
         }
         
         /* Sidebar */
@@ -174,6 +193,20 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 99;
+            position: relative;
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 98;
         }
         
         .sidebar-section {
@@ -237,6 +270,42 @@
             color: var(--primary);
         }
         
+        /* Members List */
+        .members-list {
+            list-style: none;
+        }
+        
+        .member-item {
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .member-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .member-name {
+            font-size: 0.9rem;
+        }
+        
         /* User Profile Section */
         .user-profile {
             background: rgba(255, 255, 255, 0.05);
@@ -265,6 +334,7 @@
             font-weight: 600;
             color: white;
             transition: transform 0.3s;
+            flex-shrink: 0;
         }
         
         .user-avatar:hover {
@@ -273,11 +343,15 @@
         
         .user-details {
             flex-grow: 1;
+            overflow: hidden;
         }
         
         .user-details h3 {
             font-size: 1.1rem;
             margin-bottom: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .user-details p {
@@ -338,9 +412,12 @@
         
         /* Chat Header */
         .chat-header {
-            padding: 1.5rem;
+            padding: 1.2rem 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(10, 10, 22, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         
         .chat-header h2 {
@@ -354,6 +431,14 @@
             color: var(--primary);
         }
         
+        .channel-info {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
         /* Messages Container */
         .messages-container {
             flex-grow: 1;
@@ -362,12 +447,13 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            min-height: 0;
         }
         
         .message {
             display: flex;
             gap: 1rem;
-            max-width: 80%;
+            max-width: 85%;
             animation: fadeIn 0.3s ease;
         }
         
@@ -415,6 +501,8 @@
             border-radius: 18px 18px 18px 4px;
             max-width: 100%;
             transition: transform 0.3s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .message:hover .message-content {
@@ -427,6 +515,7 @@
             align-items: center;
             gap: 0.8rem;
             margin-bottom: 0.3rem;
+            flex-wrap: wrap;
         }
         
         .message-sender {
@@ -450,7 +539,7 @@
         
         /* Message Input */
         .message-input-container {
-            padding: 1.5rem;
+            padding: 1.2rem 1.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(10, 10, 22, 0.8);
         }
@@ -582,6 +671,8 @@
             backdrop-filter: blur(10px);
             transform: translateY(0);
             transition: transform 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .modal-overlay.show .modal-content {
@@ -589,8 +680,7 @@
         }
         
         .modal-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 1.5rem 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -621,7 +711,7 @@
         }
         
         .modal-body {
-            padding: 2rem;
+            padding: 0 1.5rem 1.5rem;
         }
         
         .form-group {
@@ -703,28 +793,11 @@
         }
         
         /* Responsive Design */
-        @media (max-width: 768px) {
+        /* Tablet (768px - 1024px) */
+        @media (max-width: 1024px) {
             .sidebar {
-                width: 70px;
-                padding: 1rem;
-            }
-            
-            .channel-name, .sidebar-title span, .user-details {
-                display: none;
-            }
-            
-            .channel-item {
-                justify-content: center;
-                padding: 0.8rem;
-            }
-            
-            .user-profile {
-                padding: 1rem;
-            }
-            
-            .user-info {
-                flex-direction: column;
-                text-align: center;
+                width: 240px;
+                padding: 1.2rem;
             }
             
             .message {
@@ -732,29 +805,205 @@
             }
         }
         
-        @media (max-width: 480px) {
+        /* Mobile & Tablet (max-width: 768px) */
+        @media (max-width: 768px) {
             header {
                 padding: 1rem;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
             }
             
             .logo h1 {
                 font-size: 1.2rem;
             }
             
-            .online-counter span:last-child {
+            .back-btn span {
                 display: none;
+            }
+            
+            .back-btn {
+                padding: 0.6rem;
             }
             
             .main-container {
                 height: calc(100vh - 60px);
             }
             
-            .modal-body {
-                padding: 1.5rem;
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                transform: translateX(-100%);
+                z-index: 100;
+                width: 280px;
+                box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .chat-area {
+                width: 100%;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+            
+            .modal-content {
+                max-width: 100%;
+                margin: 0 1rem;
             }
             
             .modal-actions {
                 flex-direction: column;
+            }
+        }
+        
+        /* Small Mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .logo .community-badge {
+                display: none;
+            }
+            
+            .online-counter span:last-child {
+                display: none;
+            }
+            
+            .chat-header {
+                padding: 1rem;
+            }
+            
+            .chat-header h2 {
+                font-size: 1.1rem;
+            }
+            
+            .messages-container {
+                padding: 1rem;
+            }
+            
+            .message-input-container {
+                padding: 1rem;
+            }
+            
+            .message-input-wrapper {
+                gap: 0.5rem;
+            }
+            
+            .message-content {
+                padding: 0.6rem 1rem;
+            }
+            
+            .message-header {
+                gap: 0.5rem;
+            }
+            
+            .modal-body {
+                padding: 0 1rem 1.5rem;
+            }
+            
+            .modal-header {
+                padding: 1.5rem 1rem 1rem;
+            }
+            
+            .modal-header h2 {
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* Very Small Mobile (max-width: 360px) */
+        @media (max-width: 360px) {
+            .logo h1 {
+                font-size: 1rem;
+            }
+            
+            .logo i {
+                font-size: 1.5rem;
+            }
+            
+            .message {
+                gap: 0.5rem;
+            }
+            
+            .message-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+            
+            .user-avatar {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+            
+            .send-btn {
+                width: 45px;
+                height: 45px;
+            }
+        }
+        
+        /* Large Desktop (min-width: 1440px) */
+        @media (min-width: 1440px) {
+            .sidebar {
+                width: 320px;
+            }
+            
+            .messages-container {
+                padding: 2rem;
+            }
+            
+            .chat-header {
+                padding: 1.5rem 2rem;
+            }
+            
+            .message-input-container {
+                padding: 1.5rem 2rem;
+            }
+        }
+        
+        /* Landscape Mode for Mobile */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .main-container {
+                height: calc(100vh - 50px);
+            }
+            
+            header {
+                padding: 0.5rem 1rem;
+            }
+            
+            .sidebar {
+                padding: 1rem;
+            }
+            
+            .user-profile {
+                padding: 1rem;
+            }
+            
+            .user-info {
+                margin-bottom: 1rem;
+            }
+            
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .messages-container {
+                padding: 1rem;
+            }
+            
+            .message-input-container {
+                padding: 0.8rem 1rem;
             }
         }
     </style>
@@ -762,6 +1011,10 @@
 <body>
     <!-- Header -->
     <header>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
         <div class="logo">
             <i class="fas fa-rocket" aria-hidden="true"></i>
             <h1>NextLaunch<span class="community-badge">COMMUNITY</span></h1>
@@ -780,10 +1033,13 @@
         </div>
     </header>
     
+    <!-- Sidebar Overlay (for mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <!-- Main Container -->
     <div class="main-container">
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-section">
                 <div class="sidebar-title">
                     <i class="fas fa-hashtag"></i>
@@ -795,6 +1051,24 @@
                             <i class="fas fa-comments"></i>
                         </div>
                         <span class="channel-name">General Chat</span>
+                    </li>
+                    <li class="channel-item" data-channel="launches">
+                        <div class="channel-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <span class="channel-name">Launch Updates</span>
+                    </li>
+                    <li class="channel-item" data-channel="news">
+                        <div class="channel-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <span class="channel-name">Space News</span>
+                    </li>
+                    <li class="channel-item" data-channel="questions">
+                        <div class="channel-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <span class="channel-name">Q&A</span>
                     </li>
                 </ul>
             </div>
@@ -848,6 +1122,10 @@
                     <i class="fas fa-comments"></i>
                     General Chat
                 </h2>
+                <div class="channel-info">
+                    <div class="online-dot"></div>
+                    <span id="channelMemberCount">1 member</span>
+                </div>
             </div>
             
             <!-- Messages Container -->
@@ -938,19 +1216,49 @@
             const userStatus = document.getElementById('userStatus');
             const membersList = document.getElementById('membersList');
             const onlineCount = document.getElementById('onlineCount');
+            const channelMemberCount = document.getElementById('channelMemberCount');
             const emojiBtn = document.getElementById('emojiBtn');
             const attachBtn = document.getElementById('attachBtn');
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const channelItems = document.querySelectorAll('.channel-item');
             
             // State Management
             let currentUser = null;
             let messages = [];
             let onlineMembers = [];
+            let currentChannel = 'general';
             
             // Colors for user avatars
             const avatarColors = [
                 '#0b3d91', '#fc3d21', '#10b981', '#f59e0b', 
                 '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'
             ];
+            
+            // Channel data
+            const channels = {
+                general: {
+                    name: 'General Chat',
+                    icon: 'fa-comments',
+                    description: 'General space discussions'
+                },
+                launches: {
+                    name: 'Launch Updates',
+                    icon: 'fa-rocket',
+                    description: 'Latest rocket launch news'
+                },
+                news: {
+                    name: 'Space News',
+                    icon: 'fa-newspaper',
+                    description: 'Space exploration updates'
+                },
+                questions: {
+                    name: 'Q&A',
+                    icon: 'fa-question-circle',
+                    description: 'Ask and answer questions'
+                }
+            };
             
             // Initialize the application
             function init() {
@@ -971,6 +1279,30 @@
                 
                 // Update UI based on user status
                 updateUI();
+                
+                // Update channel display
+                updateChannelDisplay();
+                
+                // Close sidebar on mobile by default
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            }
+            
+            // Toggle sidebar for mobile
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            }
+            
+            function openSidebar() {
+                sidebar.classList.add('active');
+                sidebarOverlay.classList.add('active');
+            }
+            
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
             }
             
             // Check if user is signed up
@@ -1059,21 +1391,23 @@
                         </div>
                     `;
                     onlineCount.textContent = '0';
+                    channelMemberCount.textContent = '0 members';
                     return;
                 }
                 
-                // Update counter
+                // Update counters
                 onlineCount.textContent = onlineMembers.length;
+                channelMemberCount.textContent = `${onlineMembers.length} member${onlineMembers.length !== 1 ? 's' : ''}`;
                 
                 // Create member items
                 onlineMembers.forEach(member => {
                     const memberElement = document.createElement('div');
-                    memberElement.className = 'channel-item';
+                    memberElement.className = 'member-item';
                     memberElement.innerHTML = `
-                        <div class="channel-icon">
-                            <div style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
+                        <div class="member-avatar" style="background: ${member.avatarColor}">
+                            ${member.name.charAt(0).toUpperCase()}
                         </div>
-                        <span class="channel-name">${member.name}</span>
+                        <span class="member-name">${member.name}</span>
                     `;
                     membersList.appendChild(memberElement);
                 });
@@ -1124,6 +1458,22 @@
                 // Logout
                 logoutBtn.addEventListener('click', logoutUser);
                 
+                // Mobile menu toggle
+                mobileMenuToggle.addEventListener('click', toggleSidebar);
+                sidebarOverlay.addEventListener('click', closeSidebar);
+                
+                // Close sidebar when clicking on a channel (on mobile)
+                channelItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            closeSidebar();
+                        }
+                        
+                        const channel = this.getAttribute('data-channel');
+                        switchChannel(channel);
+                    });
+                });
+                
                 // Close modal when clicking outside
                 signupModal.addEventListener('click', function(e) {
                     if (e.target === signupModal) {
@@ -1131,6 +1481,18 @@
                         setTimeout(() => {
                             signupModal.style.display = 'none';
                         }, 300);
+                    }
+                });
+                
+                // Window resize handling
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        // On larger screens, ensure sidebar is visible
+                        sidebar.style.transform = 'translateX(0)';
+                        sidebarOverlay.classList.remove('active');
+                    } else {
+                        // On mobile, ensure sidebar is hidden by default
+                        closeSidebar();
                     }
                 });
             }
@@ -1156,7 +1518,7 @@
                     logoutBtn.style.display = 'block';
                     
                     messageInput.disabled = false;
-                    messageInput.placeholder = `Message as ${currentUser.name}...`;
+                    messageInput.placeholder = `Message in ${channels[currentChannel].name}...`;
                     sendBtn.disabled = false;
                     emojiBtn.disabled = false;
                     attachBtn.disabled = false;
@@ -1176,6 +1538,40 @@
                     emojiBtn.disabled = true;
                     attachBtn.disabled = true;
                 }
+            }
+            
+            // Switch to a different channel
+            function switchChannel(channel) {
+                // Update active channel in UI
+                channelItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-channel') === channel) {
+                        item.classList.add('active');
+                    }
+                });
+                
+                // Update current channel
+                currentChannel = channel;
+                
+                // Update channel display
+                updateChannelDisplay();
+                
+                // Update message input placeholder
+                if (currentUser) {
+                    messageInput.placeholder = `Message in ${channels[currentChannel].name}...`;
+                }
+                
+                // Filter and render messages for this channel
+                renderMessages();
+            }
+            
+            // Update channel display
+            function updateChannelDisplay() {
+                const chatHeader = document.querySelector('.chat-header h2');
+                chatHeader.innerHTML = `
+                    <i class="fas ${channels[currentChannel].icon}"></i>
+                    ${channels[currentChannel].name}
+                `;
             }
             
             // Signup user
@@ -1263,13 +1659,16 @@
                     userColor: currentUser.avatarColor,
                     text: messageText,
                     timestamp: new Date().toISOString(),
-                    channel: 'general'
+                    channel: currentChannel
                 };
                 
                 // Add to messages array
                 messages.push(message);
                 
-                // Save to localStorage
+                // Save to localStorage (limit to last 100 messages to prevent storage issues)
+                if (messages.length > 100) {
+                    messages = messages.slice(-100);
+                }
                 saveMessages();
                 
                 // Render message
@@ -1316,7 +1715,7 @@
                             userColor: '#8b5cf6',
                             text: response,
                             timestamp: new Date().toISOString(),
-                            channel: 'general'
+                            channel: currentChannel
                         };
                         
                         messages.push(botMessage);
@@ -1338,7 +1737,7 @@
                     userColor: '#f59e0b',
                     text: text,
                     timestamp: new Date().toISOString(),
-                    channel: 'general'
+                    channel: currentChannel
                 };
                 
                 messages.push(message);
@@ -1355,17 +1754,20 @@
             function renderMessages() {
                 messagesContainer.innerHTML = '';
                 
-                if (messages.length === 0) {
+                // Filter messages for current channel
+                const channelMessages = messages.filter(msg => msg.channel === currentChannel);
+                
+                if (channelMessages.length === 0) {
                     messagesContainer.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-comments"></i>
-                            <p>No messages yet. Be the first to say hello!</p>
+                            <p>No messages yet in ${channels[currentChannel].name}. Be the first to say hello!</p>
                         </div>
                     `;
                     return;
                 }
                 
-                messages.forEach(message => {
+                channelMessages.forEach(message => {
                     renderMessage(message);
                 });
                 

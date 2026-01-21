@@ -1103,20 +1103,32 @@
     </div>
 
     <script>
-        // API Configuration dengan optimasi
-        const API_BASE_URL = 'https://ll.thespacedevs.com/2.2.0';
+        // API Configuration dengan MULTIPLE FALLBACK
+        const API_CONFIG = {
+            PRIMARY: 'https://lldev.thespacedevs.com/2.2.0', // Development API (rate limit lebih longgar)
+            SECONDARY: 'https://spacelaunchnow.me/api/3.3.0', // Backup API 1
+            TERTIARY: 'https://api.spacexdata.com/v4/launches/upcoming', // Backup API 2
+            USE_CACHE: true,
+            USE_OFFLINE_DATA: true
+        };
+
         const API_ENDPOINTS = {
-            UPCOMING: `${API_BASE_URL}/launch/upcoming/?limit=10&mode=detailed`,
-            NEXT: `${API_BASE_URL}/launch/upcoming/?limit=1&mode=detailed`,
-            LAUNCH: (id) => `${API_BASE_URL}/launch/${id}/?mode=detailed`
+            // Primary endpoints
+            UPCOMING: `${API_CONFIG.PRIMARY}/launch/upcoming/?limit=10&mode=detailed`,
+            NEXT: `${API_CONFIG.PRIMARY}/launch/upcoming/?limit=1&mode=detailed`,
+            LAUNCH: (id) => `${API_CONFIG.PRIMARY}/launch/${id}/?mode=detailed`,
+            
+            // Secondary endpoints
+            UPCOMING_SECONDARY: `${API_CONFIG.SECONDARY}/launch/upcoming/?limit=10`,
+            UPCOMING_TERTIARY: `${API_CONFIG.TERTIARY}`
         };
 
         // Cache dengan optimasi
         let launchesCache = null;
         let cacheTimestamp = null;
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 menit
+        const CACHE_DURATION = 10 * 60 * 1000; // 10 menit
         let retryCount = 0;
-        const MAX_RETRIES = 3;
+        const MAX_RETRIES = 2; // Kurangi retry
         let activeCountdowns = new Map();
 
         // DOM Elements
@@ -1134,17 +1146,23 @@
 
         async function init() {
             try {
-                // Cek cache
+                // Cek cache dulu
                 const now = Date.now();
-                if (launchesCache && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
-                    console.log('Menggunakan data cache');
+                if (API_CONFIG.USE_CACHE && launchesCache && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
+                    console.log('✅ Menggunakan data cache');
                     renderPage(launchesCache);
-                } else {
-                    console.log('Mengambil data baru dari API');
-                    const launches = await fetchLaunchesWithRetry();
+                    return;
+                }
+                
+                console.log('🔄 Mengambil data baru dari API');
+                const launches = await fetchLaunchesWithFallback();
+                
+                if (launches && launches.length > 0) {
                     launchesCache = launches;
                     cacheTimestamp = now;
                     renderPage(launches);
+                } else {
+                    throw new Error('No launch data received');
                 }
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -1191,66 +1209,191 @@
             });
         }
 
-        // Fetch dengan retry logic
-        async function fetchLaunchesWithRetry() {
-            try {
-                const launches = await fetchLaunches();
-                retryCount = 0;
-                return launches;
-            } catch (error) {
-                retryCount++;
-                if (retryCount <= MAX_RETRIES) {
-                    console.log(`Retry attempt ${retryCount}/${MAX_RETRIES}`);
-                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-                    return fetchLaunchesWithRetry();
-                } else {
-                    throw new Error(`Failed after ${MAX_RETRIES} retries: ${error.message}`);
+        // Fetch dengan fallback ke multiple API
+        async function fetchLaunchesWithFallback() {
+            const apisToTry = [
+                {
+                    name: 'Primary API',
+                    url: API_ENDPOINTS.UPCOMING,
+                    parser: (data) => data.results
+                },
+                {
+                    name: 'Secondary API',
+                    url: API_ENDPOINTS.UPCOMING_SECONDARY,
+                    parser: (data) => data.results
+                },
+                {
+                    name: 'SpaceX API',
+                    url: API_ENDPOINTS.UPCOMING_TERTIARY,
+                    parser: (data) => data.map(launch => formatSpaceXData(launch))
+                }
+            ];
+
+            for (const api of apisToTry) {
+                try {
+                    console.log(`🔄 Trying ${api.name}...`);
+                    
+                    const response = await fetch(api.url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'User-Agent': 'NextLaunchApp/1.0'
+                        },
+                        signal: AbortSignal.timeout(8000)
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            console.log(`⚠️ ${api.name} rate limited, trying next...`);
+                            continue;
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const launches = api.parser(data);
+                    
+                    if (launches && launches.length > 0) {
+                        console.log(`✅ Success with ${api.name}`);
+                        return launches;
+                    }
+                    
+                } catch (error) {
+                    console.log(`❌ ${api.name} failed:`, error.message);
+                    continue;
                 }
             }
+            
+            // Jika semua API gagal, gunakan data offline
+            console.log('📴 All APIs failed, using offline data');
+            return getOfflineLaunchData();
         }
 
-        // Fetch launches
-        async function fetchLaunches() {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
-                const response = await fetch(API_ENDPOINTS.UPCOMING, {
-                    signal: controller.signal,
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+        // Format data SpaceX ke format yang konsisten
+        function formatSpaceXData(spacexLaunch) {
+            return {
+                id: spacexLaunch.id,
+                name: spacexLaunch.name || 'SpaceX Launch',
+                net: spacexLaunch.date_utc || new Date().toISOString(),
+                rocket: {
+                    configuration: {
+                        name: spacexLaunch.rocket || 'Falcon 9',
+                        family: 'Falcon'
                     }
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                },
+                pad: {
+                    location: {
+                        name: spacexLaunch.launchpad || 'Cape Canaveral, FL'
+                    }
+                },
+                mission: {
+                    description: spacexLaunch.details || 'SpaceX launch mission',
+                    type: 'Commercial'
+                },
+                image: spacexLaunch.links?.patch?.small || 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=400&fit=crop',
+                status: {
+                    abbrev: 'TBC'
+                },
+                vidURLs: spacexLaunch.links?.webcast ? [{ url: spacexLaunch.links.webcast }] : []
+            };
+        }
+
+        // Offline data fallback
+        function getOfflineLaunchData() {
+            return [
+                {
+                    id: 'offline-1',
+                    name: "SpaceX Falcon 9 • Starlink Mission",
+                    net: new Date(Date.now() + 86400000).toISOString(),
+                    rocket: {
+                        configuration: {
+                            name: "Falcon 9",
+                            family: "Falcon"
+                        }
+                    },
+                    pad: {
+                        location: {
+                            name: "Cape Canaveral, FL"
+                        }
+                    },
+                    mission: {
+                        description: "A batch of Starlink satellites for SpaceX's global internet constellation.",
+                        type: "Communications"
+                    },
+                    image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=400&fit=crop",
+                    status: {
+                        abbrev: "Go"
+                    },
+                    vidURLs: []
+                },
+                {
+                    id: 'offline-2',
+                    name: "Rocket Lab Electron • 'The Moon God Awakens'",
+                    net: new Date(Date.now() + 172800000).toISOString(),
+                    rocket: {
+                        configuration: {
+                            name: "Electron",
+                            family: "Electron"
+                        }
+                    },
+                    pad: {
+                        location: {
+                            name: "Mahia Peninsula, New Zealand"
+                        }
+                    },
+                    mission: {
+                        description: "Commercial satellite deployment mission for various customers.",
+                        type: "Commercial"
+                    },
+                    image: "https://images.unsplash.com/photo-1517976487492-5750f3195933?w=400&h=400&fit=crop",
+                    status: {
+                        abbrev: "TBC"
+                    },
+                    vidURLs: []
+                },
+                {
+                    id: 'offline-3',
+                    name: "NASA Artemis II • Lunar Flyby",
+                    net: new Date(Date.now() + 2592000000).toISOString(),
+                    rocket: {
+                        configuration: {
+                            name: "SLS Block 1",
+                            family: "SLS"
+                        }
+                    },
+                    pad: {
+                        location: {
+                            name: "Kennedy Space Center, FL"
+                        }
+                    },
+                    mission: {
+                        description: "NASA's crewed lunar flyby mission, testing systems for future Moon landings.",
+                        type: "Exploration"
+                    },
+                    image: "https://images.unsplash.com/photo-1516849841032-87cbac4d88f7?w=400&h=400&fit=crop",
+                    status: {
+                        abbrev: "TBC"
+                    },
+                    vidURLs: []
                 }
-                
-                const data = await response.json();
-                return data.results;
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    throw new Error('Request timeout. Please check your connection.');
-                }
-                throw error;
-            }
+            ];
         }
 
         // Fetch single launch by ID
         async function fetchLaunchById(id) {
             try {
-                const response = await fetch(API_ENDPOINTS.LAUNCH(id));
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                // Coba API development terlebih dahulu
+                const response = await fetch(`https://lldev.thespacedevs.com/2.2.0/launch/${id}/?mode=detailed`, {
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                if (response.ok) {
+                    return await response.json();
                 }
-                return await response.json();
             } catch (error) {
-                console.error('Error fetching launch:', error);
-                throw error;
+                console.log('Fetch detailed launch failed:', error.message);
+                // Return null, akan menggunakan data yang sudah ada
             }
+            return null;
         }
 
         // Render halaman
@@ -1594,7 +1737,12 @@
             try {
                 // Coba ambil data detail
                 const detailedLaunch = await fetchLaunchById(launch.id);
-                renderLaunchModal(detailedLaunch);
+                if (detailedLaunch) {
+                    renderLaunchModal(detailedLaunch);
+                } else {
+                    // Gunakan data yang sudah ada
+                    renderLaunchModal(launch);
+                }
             } catch (error) {
                 // Gunakan data yang sudah ada
                 console.log('Using existing launch data for modal');
@@ -1694,17 +1842,17 @@
             // Event listeners untuk tombol share
             document.getElementById('shareTwitter').addEventListener('click', () => {
                 const text = `Check out the ${launch.name} launch on NextLaunch!`;
-                const url = `https://ll.thespacedevs.com/launch/${launch.id}/`;
+                const url = window.location.href;
                 window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
             });
             
             document.getElementById('shareFacebook').addEventListener('click', () => {
-                const url = `https://ll.thespacedevs.com/launch/${launch.id}/`;
+                const url = window.location.href;
                 window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
             });
             
             document.getElementById('shareWhatsApp').addEventListener('click', () => {
-                const text = `Check out the ${launch.name} launch on NextLaunch! https://ll.thespacedevs.com/launch/${launch.id}/`;
+                const text = `Check out the ${launch.name} launch on NextLaunch! ${window.location.href}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
             });
         }
@@ -1737,66 +1885,9 @@
             });
             
             document.getElementById('offlineModeBtn').addEventListener('click', () => {
-                loadSampleData();
+                const offlineData = getOfflineLaunchData();
+                renderPage(offlineData);
             });
-        }
-
-        // Load sample data untuk offline mode
-        function loadSampleData() {
-            const sampleLaunches = [
-                {
-                    id: 1,
-                    name: "SpaceX Falcon 9 - Starlink Mission",
-                    net: new Date(Date.now() + 86400000).toISOString(),
-                    rocket: {
-                        configuration: {
-                            name: "Falcon 9",
-                            family: "Falcon"
-                        }
-                    },
-                    pad: {
-                        location: {
-                            name: "Cape Canaveral, FL"
-                        }
-                    },
-                    mission: {
-                        description: "A batch of Starlink satellites for SpaceX's global internet constellation.",
-                        type: "Communications"
-                    },
-                    image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=400&fit=crop",
-                    status: {
-                        abbrev: "Go"
-                    },
-                    vidURLs: []
-                },
-                {
-                    id: 2,
-                    name: "NASA Artemis II - Lunar Flyby",
-                    net: new Date(Date.now() + 2592000000).toISOString(),
-                    rocket: {
-                        configuration: {
-                            name: "SLS Block 1",
-                            family: "SLS"
-                        }
-                    },
-                    pad: {
-                        location: {
-                            name: "Kennedy Space Center, FL"
-                        }
-                    },
-                    mission: {
-                        description: "NASA's crewed lunar flyby mission, testing systems for future Moon landings.",
-                        type: "Exploration"
-                    },
-                    image: "https://images.unsplash.com/photo-1516849841032-87cbac4d88f7?w=400&h=400&fit=crop",
-                    status: {
-                        abbrev: "TBC"
-                    },
-                    vidURLs: []
-                }
-            ];
-            
-            renderPage(sampleLaunches);
         }
     </script>
 </body>
