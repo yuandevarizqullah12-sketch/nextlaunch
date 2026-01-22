@@ -1073,6 +1073,9 @@
         const modalBody = document.getElementById('modalBody');
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 
+        // Global variables for countdown intervals
+        let countdownIntervals = new Map(); // Store intervals by launch ID
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
 
@@ -1150,6 +1153,9 @@
             // Get the next launch (first in the array)
             const nextLaunch = launches[0];
             
+            // Clear any existing countdown intervals
+            clearAllCountdowns();
+            
             // Render countdown
             renderCountdown(nextLaunch);
             
@@ -1160,18 +1166,21 @@
             renderUpcomingLaunches(launches.slice(1)); // Skip the first one (it's in the hero)
         }
 
-        // Render countdown timer
+        // Clear all countdown intervals
+        function clearAllCountdowns() {
+            countdownIntervals.forEach(interval => {
+                clearInterval(interval);
+            });
+            countdownIntervals.clear();
+        }
+
+        // Render countdown timer - FIXED TDZ ISSUE
         function renderCountdown(launch) {
             const launchDate = new Date(launch.net);
             const now = new Date();
             
-            // Calculate initial time difference
-            updateCountdownDisplay(launchDate, now);
-            
-            // Update every second
-            const countdownInterval = setInterval(() => {
-                updateCountdownDisplay(launchDate, new Date());
-            }, 1000);
+            // Store interval ID for this launch
+            let countdownInterval;
             
             function updateCountdownDisplay(targetDate, currentDate) {
                 const timeRemaining = targetDate.getTime() - currentDate.getTime();
@@ -1231,7 +1240,11 @@
                     `;
                 } else {
                     // Launch has passed
-                    clearInterval(countdownInterval);
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        // Remove from map
+                        countdownIntervals.delete(launch.id);
+                    }
                     countdownContainer.innerHTML = `
                         <div class="countdown-title">Launch Status</div>
                         <div style="text-align: center; padding: 2rem;">
@@ -1241,6 +1254,17 @@
                     `;
                 }
             }
+            
+            // Calculate initial time difference
+            updateCountdownDisplay(launchDate, now);
+            
+            // Update every second
+            countdownInterval = setInterval(() => {
+                updateCountdownDisplay(launchDate, new Date());
+            }, 1000);
+            
+            // Store interval in map
+            countdownIntervals.set(launch.id, countdownInterval);
         }
 
         // Render launch card with improved button layout
