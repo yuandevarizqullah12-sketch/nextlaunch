@@ -5,24 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextLaunch - Real Rocket Launch Schedule</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ===== ROOT VARIABLES ===== */
         :root {
             --primary: #0b3d91;
             --secondary: #fc3d21;
+            --accent: #00d4ff;
             --dark: #0a0a16;
+            --dark-light: #14142a;
             --light: #f5f7fa;
             --gray: #2a2a3c;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --card-bg: rgba(20, 25, 40, 0.8);
+            --card-bg: rgba(20, 25, 40, 0.95);
+            --card-bg-light: rgba(30, 35, 50, 0.9);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --transition-fast: all 0.2s ease;
         }
         
+        /* ===== RESET & BASE STYLES ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        html {
+            scroll-behavior: smooth;
         }
         
         body {
@@ -30,286 +43,650 @@
             color: var(--light);
             min-height: 100vh;
             line-height: 1.6;
+            font-family: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(11, 61, 145, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(252, 61, 33, 0.1) 0%, transparent 20%);
+                radial-gradient(circle at 10% 20%, rgba(11, 61, 145, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(252, 61, 33, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+            overflow-x: hidden;
+            position: relative;
         }
         
-        /* Header & Navigation */
+        /* Animated Background Elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(11, 61, 145, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(252, 61, 33, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundPulse 20s infinite alternate;
+        }
+        
+        @keyframes backgroundPulse {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        /* Stars Animation */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        /* ===== TYPOGRAPHY ===== */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
+        }
+        
+        p {
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 400;
+        }
+        
+        /* ===== HEADER & NAVIGATION ===== */
         header {
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: rgba(10, 10, 22, 0.9);
-            backdrop-filter: blur(10px);
+            background-color: rgba(10, 10, 22, 0.98);
+            backdrop-filter: blur(20px);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.8s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         .logo {
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05) translateY(-2px);
         }
         
         .logo i {
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: var(--secondary);
+            filter: drop-shadow(0 0 10px rgba(252, 61, 33, 0.7));
+            animation: rocketFloat 3s ease-in-out infinite alternate;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes rocketFloat {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-10px) rotate(5deg); }
         }
         
         .logo h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(11, 61, 145, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), transparent);
+            border-radius: 20px;
+            z-index: 0;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .logo:hover::after {
+            opacity: 0.3;
         }
         
         .api-status {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: #94a3b8;
+            gap: 12px;
+            font-size: 1rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 50px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
+            transition: var(--transition);
+        }
+        
+        .api-status:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
         }
         
         .api-status .indicator {
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: var(--success);
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 15px var(--success);
+            position: relative;
+        }
+        
+        .api-status .indicator::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            border: 1px solid var(--success);
             animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
         
         .mobile-menu-btn {
             display: none;
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--light);
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             cursor: pointer;
+            padding: 0.6rem;
+            border-radius: 10px;
+            transition: var(--transition);
+            width: 50px;
+            height: 50px;
+            align-items: center;
+            justify-content: center;
         }
         
-        /* Main Container */
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* ===== MAIN CONTAINER ===== */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem;
         }
         
-        /* Hero Countdown Section */
+        /* ===== HERO COUNTDOWN SECTION ===== */
         .hero {
             text-align: center;
-            padding: 4rem 0 2rem;
+            padding: 5rem 0 4rem;
             position: relative;
             overflow: hidden;
         }
         
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(11, 61, 145, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+        
         .hero-title {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(90deg, var(--light), #a5b4fc);
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--light), var(--accent), #a5b4fc);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            animation: titleGlow 3s infinite alternate, fadeInUp 1s ease;
+            text-shadow: 0 2px 20px rgba(0, 212, 255, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 0 2px 20px rgba(0, 212, 255, 0.3); }
+            100% { text-shadow: 0 2px 30px rgba(0, 212, 255, 0.7), 0 5px 40px rgba(11, 61, 145, 0.4); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .hero-subtitle {
             color: #94a3b8;
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Countdown Timer */
-        .countdown-container {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 2.5rem;
-            margin-bottom: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
+            font-size: 1.3rem;
+            margin-bottom: 4rem;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
+            line-height: 1.8;
+            animation: fadeInUp 1s ease 0.2s both;
+            font-weight: 300;
+        }
+        
+        /* ===== COUNTDOWN TIMER ===== */
+        .countdown-container {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 4rem 3rem;
+            margin-bottom: 4rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 0 30px rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 1s ease 0.4s both, float 6s ease-in-out infinite alternate;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotateX(0deg); }
+            100% { transform: translateY(-20px) rotateX(2deg); }
+        }
+        
+        .countdown-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent), var(--primary));
+            z-index: -1;
+            border-radius: 32px;
+            opacity: 0.5;
+            animation: borderGlow 3s infinite alternate;
+            filter: blur(10px);
+        }
+        
+        @keyframes borderGlow {
+            0% { opacity: 0.4; }
+            100% { opacity: 0.8; }
         }
         
         .countdown-title {
-            font-size: 1.2rem;
-            color: #94a3b8;
-            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 2.5rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            animation: pulse 2s infinite;
         }
         
         .countdown {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 2.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
         }
         
         .countdown-item {
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-width: 150px;
+            position: relative;
+            perspective: 1000px;
         }
         
         .countdown-value {
-            font-size: 3.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-size: 5.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             line-height: 1;
+            text-shadow: 0 5px 25px rgba(11, 61, 145, 0.4);
+            font-variant-numeric: tabular-nums;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            z-index: 1;
+            transform-style: preserve-3d;
+            animation: countdownDigit 0.5s ease;
+        }
+        
+        @keyframes countdownDigit {
+            0% { transform: scale(1) rotateX(0); }
+            50% { transform: scale(1.1) rotateX(10deg); }
+            100% { transform: scale(1) rotateX(0); }
         }
         
         .countdown-label {
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 0.5rem;
+            letter-spacing: 2px;
+            margin-top: 1rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .timezone-info {
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 3rem;
             color: #94a3b8;
-            font-size: 0.9rem;
-            margin-top: 1rem;
+            font-size: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
         }
         
-        /* Progress Bar */
+        .timezone-info > div {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            min-width: 280px;
+        }
+        
+        .timezone-info > div:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* ===== PROGRESS BAR ===== */
         .progress-container {
-            margin-top: 2rem;
+            margin-top: 3rem;
         }
         
         .progress-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
-            color: #94a3b8;
-            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 6px;
             overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 6px;
             width: 65%;
-            transition: width 1s ease;
+            transition: width 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(11, 61, 145, 0.4);
         }
         
-        /* Launch Info Card */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2.5s infinite;
+            transform: translateX(-100%);
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* ===== LAUNCH INFO CARD ===== */
         .launch-card {
             background: var(--card-bg);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            max-width: 800px;
+            border-radius: 30px;
+            padding: 3rem;
+            margin-bottom: 5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 25px 60px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 0 40px rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
+            animation: fadeInUp 1s ease 0.6s both, float 8s ease-in-out infinite alternate-reverse;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+        
+        .launch-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            box-shadow: 0 0 20px rgba(11, 61, 145, 0.5);
         }
         
         .launch-card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 1.5rem;
-            gap: 1.5rem;
+            margin-bottom: 3rem;
+            gap: 2.5rem;
         }
         
         .mission-patch {
-            width: 80px;
-            height: 80px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 3rem;
             overflow: hidden;
             flex-shrink: 0;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(11, 61, 145, 0.3);
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+            animation: rotatePatch 20s linear infinite;
+        }
+        
+        @keyframes rotatePatch {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .mission-patch:hover {
+            animation-play-state: paused;
+            transform: scale(1.1);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.6),
+                0 0 40px rgba(252, 61, 33, 0.4);
         }
         
         .mission-patch img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 50%;
         }
         
         .mission-info {
             flex-grow: 1;
             min-width: 0;
+            text-align: left;
         }
         
         .mission-info h2 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: var(--light);
+            background: linear-gradient(90deg, var(--light), #a5b4fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 15px rgba(165, 180, 252, 0.3);
         }
         
         .mission-info p {
             color: #94a3b8;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            line-height: 1.7;
+            font-weight: 300;
         }
         
         .launch-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 3rem;
         }
         
         .detail-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            min-height: 70px;
+            gap: 1.8rem;
+            min-height: 100px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .detail-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(11, 61, 145, 0.2);
+        }
+        
+        .detail-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
         }
         
         .detail-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
             background: rgba(11, 61, 145, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 2.2rem;
             color: var(--primary);
             flex-shrink: 0;
+            transition: var(--transition);
+            border: 1px solid rgba(11, 61, 145, 0.3);
+        }
+        
+        .detail-item:hover .detail-icon {
+            background: rgba(11, 61, 145, 0.3);
+            transform: scale(1.1) rotate(5deg);
+            color: var(--accent);
+            box-shadow: 0 0 25px rgba(11, 61, 145, 0.3);
         }
         
         .detail-content {
@@ -318,62 +695,108 @@
         }
         
         .detail-content h4 {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #94a3b8;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
         
         .detail-content p {
-            font-size: 1.1rem;
+            font-size: 1.4rem;
+            font-weight: 700;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: var(--light);
         }
         
-        /* BUTTON IMPROVEMENTS - RAPI DAN SEJAJAR */
+        /* ===== BUTTON STYLES ===== */
         .launch-actions {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: 1.5rem;
+            margin-top: 3rem;
         }
         
         .btn {
-            padding: 0.8rem 1rem;
-            border-radius: 10px;
+            padding: 1.2rem 1.8rem;
+            border-radius: 15px;
             border: none;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            font-size: 0.95rem;
+            gap: 1rem;
+            font-size: 1.1rem;
             text-align: center;
-            min-height: 48px;
+            min-height: 65px;
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.8px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Exo 2', sans-serif;
+            text-transform: uppercase;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: 1;
+        }
+        
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+        
+        .btn > * {
+            position: relative;
+            z-index: 2;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--primary));
             color: white;
+            box-shadow: 
+                0 10px 30px rgba(11, 61, 145, 0.5),
+                0 0 20px rgba(11, 61, 145, 0.3);
+            animation: buttonGlow 3s infinite alternate;
+        }
+        
+        @keyframes buttonGlow {
+            0% { box-shadow: 0 10px 30px rgba(11, 61, 145, 0.5), 0 0 20px rgba(11, 61, 145, 0.3); }
+            100% { box-shadow: 0 10px 40px rgba(11, 61, 145, 0.7), 0 0 30px rgba(11, 61, 145, 0.5); }
         }
         
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(252, 61, 33, 0.3);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 
+                0 15px 40px rgba(252, 61, 33, 0.6),
+                0 0 30px rgba(252, 61, 33, 0.4);
         }
         
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
+            animation: none;
         }
         
         .btn-secondary {
@@ -385,119 +808,376 @@
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.1);
         }
         
-        /* Upcoming Launches Section */
+        /* ===== STATS SECTION ===== */
+        .stats-section {
+            margin-bottom: 6rem;
+            animation: fadeInUp 1s ease 0.7s both;
+        }
+        
         .section-title {
-            font-size: 2rem;
-            margin-bottom: 2rem;
+            font-size: 2.8rem;
+            margin-bottom: 4rem;
             text-align: center;
+            background: linear-gradient(90deg, var(--light), var(--accent), #a5b4fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: block;
+            animation: fadeInUp 1s ease 0.8s both;
+            text-shadow: 0 2px 15px rgba(0, 212, 255, 0.3);
+            padding-bottom: 1.5rem;
         }
         
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(11, 61, 145, 0.5);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.5rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            animation: statCardEntrance 0.8s ease both;
+            animation-delay: calc(var(--stat-order) * 0.1s);
+        }
+        
+        @keyframes statCardEntrance {
+            0% { 
+                opacity: 0; 
+                transform: translateY(50px) scale(0.8); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(11, 61, 145, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+        
+        .stat-value {
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1;
+            margin-bottom: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 5px 20px rgba(11, 61, 145, 0.3);
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        /* ===== UPCOMING LAUNCHES SECTION ===== */
         .upcoming-launches {
-            margin-bottom: 4rem;
+            margin-bottom: 6rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3.5rem;
+            flex-wrap: wrap;
+            gap: 2rem;
+            animation: fadeInUp 1s ease 0.9s both;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.9rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-family: 'Exo 2', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(11, 61, 145, 0.3);
+            border-color: transparent;
+        }
+        
+        .filter-btn.active::before, .filter-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .search-box {
+            position: relative;
+            min-width: 300px;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1.5rem 1rem 4rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: var(--light);
+            font-size: 1.1rem;
+            transition: var(--transition);
+            font-family: 'Exo 2', sans-serif;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.2), 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.3rem;
+            z-index: 1;
         }
         
         .launches-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 2.5rem;
         }
         
         .launch-item {
             background: var(--card-bg);
-            border-radius: 16px;
+            border-radius: 25px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: var(--transition);
             display: flex;
             flex-direction: column;
+            animation: cardEntrance 0.8s ease both;
+            animation-delay: calc(var(--card-order) * 0.05s);
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        @keyframes cardEntrance {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.95); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
         }
         
         .launch-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(11, 61, 145, 0.2);
+            border-color: rgba(255, 255, 255, 0.25);
         }
         
         .launch-image {
-            height: 180px;
+            height: 230px;
             background: linear-gradient(135deg, #1e293b, #0f172a);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
+            font-size: 5rem;
             color: rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
+        }
+        
+        .launch-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
+            z-index: 1;
         }
         
         .launch-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+        
+        .launch-item:hover .launch-image img {
+            transform: scale(1.1);
         }
         
         .rocket-icon {
             position: absolute;
-            bottom: 0;
+            bottom: -30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 8rem;
+            font-size: 12rem;
             opacity: 0.1;
+            z-index: 0;
         }
         
         .launch-content {
-            padding: 1.5rem;
+            padding: 2.5rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 2;
         }
         
         .launch-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1rem;
-            gap: 0.5rem;
+            margin-bottom: 2rem;
+            gap: 1.5rem;
         }
         
         .launch-mission {
-            font-size: 1.3rem;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: 700;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             flex-grow: 1;
+            color: var(--light);
+            font-family: 'Orbitron', sans-serif;
         }
         
         .launch-status {
-            padding: 0.3rem 0.8rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
             flex-shrink: 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+            border: 2px solid transparent;
         }
         
         .status-go {
             background: rgba(16, 185, 129, 0.2);
             color: var(--success);
+            border-color: rgba(16, 185, 129, 0.3);
+            animation: statusPulse 2s infinite;
+        }
+        
+        @keyframes statusPulse {
+            0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.3); }
         }
         
         .status-tbc {
             background: rgba(245, 158, 11, 0.2);
             color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.3);
         }
         
         .status-hold {
             background: rgba(239, 68, 68, 0.2);
             color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
         }
         
         .launch-details-small {
             display: flex;
             flex-direction: column;
-            gap: 0.7rem;
-            margin-bottom: 1.5rem;
+            gap: 1.2rem;
+            margin-bottom: 2.2rem;
             flex-grow: 1;
         }
         
@@ -505,72 +1185,126 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            min-height: 24px;
+            min-height: 32px;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
         }
         
         .detail-label {
             color: #94a3b8;
-            font-size: 0.9rem;
+            font-size: 1rem;
             flex-shrink: 0;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
         }
         
         .detail-value {
-            font-weight: 500;
+            font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             text-align: right;
             flex-grow: 1;
-            margin-left: 0.5rem;
+            margin-left: 1.5rem;
+            color: var(--light);
+            font-size: 1.1rem;
         }
         
         .launch-countdown {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
             color: #94a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            margin-bottom: 1.8rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
         }
         
         .view-details-btn {
             width: 100%;
-            padding: 0.7rem;
+            padding: 1.2rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--light);
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
+            transition: var(--transition);
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            min-height: 44px;
+            gap: 1rem;
+            min-height: 60px;
             margin-top: auto;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: 'Exo 2', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .view-details-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), transparent);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
         }
         
         .view-details-btn:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
         
-        /* Loading State */
+        .view-details-btn:hover::before {
+            opacity: 0.3;
+        }
+        
+        .load-more-container {
+            text-align: center;
+            margin-top: 4rem;
+        }
+        
+        /* ===== LOADING STATE ===== */
         .loading {
             text-align: center;
-            padding: 3rem;
+            padding: 5rem;
             color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
         }
         
         .loading-spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--primary);
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--primary);
+            border-right: 5px solid var(--secondary);
+            border-bottom: 5px solid var(--accent);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            width: 70px;
+            height: 70px;
+            animation: spin 1.5s linear infinite, colorChange 3s infinite alternate;
+            margin: 0 auto 2rem;
+            box-shadow: 0 0 30px rgba(11, 61, 145, 0.3);
         }
         
         @keyframes spin {
@@ -578,26 +1312,108 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Footer */
+        @keyframes colorChange {
+            0% { border-top-color: var(--primary); border-right-color: var(--secondary); border-bottom-color: var(--accent); }
+            33% { border-top-color: var(--secondary); border-right-color: var(--accent); border-bottom-color: var(--primary); }
+            66% { border-top-color: var(--accent); border-right-color: var(--primary); border-bottom-color: var(--secondary); }
+            100% { border-top-color: var(--primary); border-right-color: var(--secondary); border-bottom-color: var(--accent); }
+        }
+        
+        /* ===== AUTO-ADVANCE NOTIFICATION ===== */
+        .auto-advance-notice {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            background: rgba(20, 25, 40, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(11, 61, 145, 0.2);
+            z-index: 100;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 400px;
+            border-left: 5px solid var(--accent);
+        }
+        
+        .auto-advance-notice.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .auto-advance-notice i {
+            color: var(--accent);
+            font-size: 2rem;
+            animation: rotate 3s linear infinite;
+        }
+        
+        /* ===== FOOTER ===== */
         footer {
             text-align: center;
-            padding: 2rem;
+            padding: 4rem 2rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             color: #94a3b8;
-            font-size: 0.9rem;
-            margin-top: 2rem;
+            font-size: 1rem;
+            margin-top: 4rem;
+            background: rgba(10, 10, 22, 0.9);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
         }
         
         footer a {
-            color: var(--primary);
+            color: var(--accent);
             text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            position: relative;
         }
         
         footer a:hover {
+            color: var(--secondary);
             text-decoration: underline;
         }
         
-        /* Modal for Launch Details */
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2.5rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+            text-decoration: none;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* ===== MODAL FOR LAUNCH DETAILS ===== */
         .modal {
             display: none;
             position: fixed;
@@ -605,109 +1421,231 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: 2rem;
+            animation: modalFadeIn 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .modal-content {
             background: var(--card-bg);
-            border-radius: 20px;
+            border-radius: 30px;
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
             max-height: 90vh;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(11, 61, 145, 0.3);
+            backdrop-filter: blur(30px);
+            animation: modalSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        
+        @keyframes modalSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(80px) scale(0.9) rotateX(10deg);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1) rotateX(0);
+            }
         }
         
         .modal-header {
-            padding: 1.5rem 2rem;
+            padding: 2.5rem 3rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-radius: 30px 30px 0 0;
         }
         
         .modal-header h2 {
-            font-size: 1.8rem;
+            font-size: 2.5rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            margin-right: 1rem;
+            margin-right: 1.5rem;
+            color: var(--light);
+            background: linear-gradient(90deg, var(--light), #a5b4fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-family: 'Orbitron', sans-serif;
         }
         
         .close-modal {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--light);
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 55px;
+            height: 55px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: background 0.3s;
+            transition: var(--transition);
             flex-shrink: 0;
         }
         
         .close-modal:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .modal-body {
-            padding: 2rem;
+            padding: 3rem;
         }
         
         .modal-section {
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            animation: modalSectionFadeIn 0.6s ease both;
+            animation-delay: calc(var(--section-order) * 0.1s);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        @keyframes modalSectionFadeIn {
+            100% { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
         }
         
         .modal-section h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-bottom: 1.8rem;
+            color: var(--accent);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .mission-description {
-            line-height: 1.7;
+            line-height: 1.9;
             color: #cbd5e1;
+            font-size: 1.2rem;
+            font-weight: 300;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .detail-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .detail-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .detail-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .detail-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        
+        .detail-card h4 {
+            color: #94a3b8;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+        
+        .detail-card p {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-card .subtext {
+            font-size: 1rem;
+            color: #94a3b8;
+            font-weight: 400;
         }
         
         .timeline {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.5rem;
         }
         
         .timeline-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
+            gap: 1.8rem;
+            padding: 1.8rem;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
         
         .timeline-icon {
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: rgba(11, 61, 145, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.8rem;
             color: var(--primary);
             flex-shrink: 0;
+            border: 2px solid rgba(11, 61, 145, 0.5);
         }
         
         .timeline-content {
@@ -716,16 +1654,17 @@
         }
         
         .timeline-content h4 {
-            font-size: 1rem;
-            margin-bottom: 0.3rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: var(--light);
         }
         
         .timeline-content p {
             color: #94a3b8;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
@@ -733,135 +1672,203 @@
             -webkit-box-orient: vertical;
         }
         
-        .payload-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        
-        .payload-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 1rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 120px;
-        }
-        
-        .payload-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-        
-        .payload-card h4 {
-            margin-bottom: 0.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 100%;
-        }
-        
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
         }
         
         .gallery-item {
-            height: 150px;
+            height: 200px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
         .gallery-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.6s ease;
         }
         
-        /* MODAL BUTTONS IMPROVEMENT - RAPI DAN SEJAJAR */
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        /* ===== MODAL SHARE BUTTONS ===== */
         .share-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            gap: 1.5rem;
         }
         
         .share-btn {
-            padding: 0.7rem 1rem;
-            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            border-radius: 15px;
             border: none;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            gap: 1rem;
+            font-size: 1.1rem;
             text-align: center;
-            min-height: 44px;
+            min-height: 65px;
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: 'Exo 2', sans-serif;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .share-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .share-btn:hover::before {
+            transform: translateX(0);
+        }
+        
+        .share-btn > * {
+            position: relative;
+            z-index: 1;
         }
         
         .share-twitter {
             background: #1da1f2;
             color: white;
+            box-shadow: 0 10px 30px rgba(29, 161, 242, 0.3);
         }
         
         .share-twitter:hover {
             background: #0d95e8;
-            transform: translateY(-2px);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(29, 161, 242, 0.5);
         }
         
         .share-facebook {
             background: #1877f2;
             color: white;
+            box-shadow: 0 10px 30px rgba(24, 119, 242, 0.3);
         }
         
         .share-facebook:hover {
             background: #0d68e0;
-            transform: translateY(-2px);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(24, 119, 242, 0.5);
         }
         
         .share-whatsapp {
             background: #25d366;
             color: white;
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
         }
         
         .share-whatsapp:hover {
             background: #1da851;
-            transform: translateY(-2px);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(37, 211, 102, 0.5);
         }
         
-        /* Responsive Design */
-        @media (max-width: 992px) {
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1400px) {
+            .launches-grid {
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            }
+            
             .countdown {
-                gap: 1rem;
+                gap: 2rem;
             }
             
             .countdown-value {
-                font-size: 2.8rem;
+                font-size: 4.5rem;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+            
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .countdown-item {
+                min-width: 130px;
+            }
+            
+            .countdown-value {
+                font-size: 4rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 2.7rem;
+            }
+            
+            .countdown {
+                gap: 1.5rem;
+            }
+            
+            .countdown-item {
+                min-width: 110px;
+            }
+            
+            .countdown-value {
+                font-size: 3.5rem;
+            }
+            
+            .launch-actions, .share-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                max-width: 95%;
             }
             
             .launches-grid {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
             }
         }
         
         @media (max-width: 768px) {
             header {
-                padding: 1rem;
+                padding: 1rem 1.5rem;
             }
             
             .api-status {
@@ -869,19 +1876,19 @@
             }
             
             .mobile-menu-btn {
-                display: block;
+                display: flex;
             }
             
             .hero {
-                padding: 2rem 0 1rem;
+                padding: 3rem 0 2.5rem;
             }
             
             .hero-title {
-                font-size: 2rem;
+                font-size: 2.4rem;
             }
             
             .countdown-container, .launch-card {
-                padding: 1.5rem;
+                padding: 2.5rem 2rem;
             }
             
             .countdown {
@@ -890,48 +1897,102 @@
             
             .countdown-item {
                 flex: 1 0 45%;
-                margin-bottom: 1rem;
+                margin-bottom: 2rem;
             }
             
             .countdown-value {
-                font-size: 2.5rem;
+                font-size: 3.2rem;
             }
             
             .timezone-info {
                 flex-direction: column;
-                gap: 0.5rem;
+                gap: 1.2rem;
+            }
+            
+            .timezone-info > div {
+                min-width: 100%;
+            }
+            
+            .launch-card-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 2rem;
+            }
+            
+            .mission-patch {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .mission-info {
+                text-align: center;
+            }
+            
+            .mission-info h2 {
+                font-size: 2.2rem;
             }
             
             .launch-details {
                 grid-template-columns: 1fr;
             }
             
-            .launch-actions {
-                grid-template-columns: 1fr;
-                gap: 0.8rem;
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .modal-content {
-                max-height: 95vh;
+            .search-box {
+                min-width: 100%;
+                max-width: 100%;
+            }
+            
+            .filter-group {
+                justify-content: center;
+            }
+            
+            .launches-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-header {
+                padding: 1.8rem;
+            }
+            
+            .modal-header h2 {
+                font-size: 1.8rem;
             }
             
             .modal-body {
-                padding: 1.5rem;
+                padding: 2rem;
+            }
+            
+            .auto-advance-notice {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                left: 1.5rem;
+                max-width: none;
             }
             
             .share-buttons {
                 grid-template-columns: 1fr;
-                gap: 0.8rem;
+            }
+            
+            .detail-cards {
+                grid-template-columns: 1fr;
             }
         }
         
-        @media (max-width: 480px) {
+        @media (max-width: 576px) {
             .container {
                 padding: 0 1rem;
             }
             
             .hero-title {
-                font-size: 1.8rem;
+                font-size: 2.1rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
             }
             
             .countdown-item {
@@ -939,39 +2000,125 @@
             }
             
             .countdown-value {
-                font-size: 2rem;
+                font-size: 2.8rem;
             }
             
-            .launches-grid {
-                grid-template-columns: 1fr;
+            .countdown-label {
+                font-size: 1rem;
             }
             
-            .btn, .share-btn, .view-details-btn {
-                width: 100%;
-                justify-content: center;
+            .section-title {
+                font-size: 2.2rem;
             }
             
             .mission-info h2 {
-                font-size: 1.5rem;
+                font-size: 1.9rem;
+            }
+            
+            .detail-content p {
+                font-size: 1.2rem;
+            }
+            
+            .btn, .share-btn, .view-details-btn {
+                padding: 1.1rem;
+                font-size: 1rem;
+                min-height: 60px;
             }
             
             .launch-mission {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 3.8rem;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            
+            .footer-links a {
+                width: 100%;
+                text-align: center;
             }
         }
         
         @media (min-width: 769px) and (max-width: 1024px) {
-            .launch-actions {
+            .launch-actions, .share-buttons {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
-            .share-buttons {
-                grid-template-columns: repeat(2, 1fr);
+        }
+        
+        /* ===== UTILITY CLASSES ===== */
+        .fade-in {
+            animation: fadeInUp 0.8s ease both;
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease both;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
             }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .rotate {
+            animation: rotate 20s linear infinite;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite alternate;
+        }
+        
+        /* ===== SCROLLBAR STYLING ===== */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, var(--secondary), var(--accent));
+        }
+        
+        /* ===== SELECTION STYLING ===== */
+        ::selection {
+            background: rgba(11, 61, 145, 0.7);
+            color: white;
+        }
+        
+        ::-moz-selection {
+            background: rgba(11, 61, 145, 0.7);
+            color: white;
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background Stars -->
+    <div class="stars" id="starsContainer"></div>
+    
     <!-- Header -->
     <header>
         <div class="logo">
@@ -994,7 +2141,7 @@
         <!-- Hero Countdown Section -->
         <section class="hero" id="home">
             <h1 class="hero-title">Next Rocket Launch</h1>
-            <p class="hero-subtitle">Real-time data from The Space Devs API. Tracking upcoming space launches worldwide.</p>
+            <p class="hero-subtitle">Real-time data from The Space Devs API. Tracking upcoming space launches worldwide. Countdown updates automatically to the next launch after current one completes.</p>
             
             <div class="countdown-container" id="countdownContainer">
                 <!-- Countdown will be dynamically loaded -->
@@ -1013,9 +2160,59 @@
             </div>
         </div>
         
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <h2 class="section-title">Launch Statistics</h2>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be dynamically loaded -->
+                <div class="stat-card" style="--stat-order: 1">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Total Upcoming</div>
+                </div>
+                <div class="stat-card" style="--stat-order: 2">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-card" style="--stat-order: 3">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Different Agencies</div>
+                </div>
+                <div class="stat-card" style="--stat-order: 4">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Launch Sites</div>
+                </div>
+            </div>
+        </section>
+        
         <!-- Upcoming Launches Section -->
         <section class="upcoming-launches" id="upcoming">
             <h2 class="section-title">Upcoming Launches</h2>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">
+                        <i class="fas fa-globe"></i> All
+                    </button>
+                    <button class="filter-btn" data-filter="go">
+                        <i class="fas fa-check-circle"></i> GO
+                    </button>
+                    <button class="filter-btn" data-filter="spacex">
+                        <i class="fab fa-space-awesome"></i> SpaceX
+                    </button>
+                    <button class="filter-btn" data-filter="nasa">
+                        <i class="fas fa-user-astronaut"></i> NASA
+                    </button>
+                    <button class="filter-btn" data-filter="this-month">
+                        <i class="fas fa-calendar"></i> This Month
+                    </button>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search launches...">
+                </div>
+            </div>
             
             <div class="launches-grid" id="launchesGrid">
                 <div class="loading" style="grid-column: 1/-1;">
@@ -1023,13 +2220,26 @@
                     <p>Loading upcoming launches...</p>
                 </div>
             </div>
+            
+            <div class="load-more-container">
+                <button class="btn btn-secondary" id="loadMoreBtn" style="max-width: 250px; margin: 0 auto;">
+                    <i class="fas fa-redo"></i> Refresh Data
+                </button>
+            </div>
         </section>
     </main>
     
     <!-- Footer -->
     <footer>
+        <div class="footer-links">
+            <a href="#home"><i class="fas fa-home"></i> Home</a>
+            <a href="#upcoming"><i class="fas fa-rocket"></i> Upcoming</a>
+            <a href="https://thespacedevs.com/" target="_blank"><i class="fas fa-code"></i> API Docs</a>
+            <a href="#" id="aboutLink"><i class="fas fa-info-circle"></i> About</a>
+        </div>
         <p>NextLaunch &copy; 2026 - Real-time rocket launch tracking</p>
         <p>Data sourced from <a href="https://thespacedevs.com/" target="_blank">The Space Devs API</a> | UI/UX by Space Enthusiasts</p>
+        <p style="margin-top: 1.5rem; font-size: 0.9rem; color: #64748b;">Auto-advance feature: Countdown automatically switches to next launch after completion</p>
     </footer>
     
     <!-- Modal for Launch Details -->
@@ -1049,21 +2259,45 @@
         </div>
     </div>
 
+    <!-- Auto-Advance Notification -->
+    <div class="auto-advance-notice" id="autoAdvanceNotice">
+        <i class="fas fa-sync-alt"></i>
+        <div>
+            <strong>Auto-Advance Active</strong>
+            <p>Countdown will automatically switch to next launch</p>
+        </div>
+    </div>
+
     <script>
-        // API Configuration
+        // ===== CONFIGURATION =====
         const API_BASE_URL = 'https://ll.thespacedevs.com/2.2.0';
+        const LAUNCHES_LIMIT = 25;
         const API_ENDPOINTS = {
-            UPCOMING: `${API_BASE_URL}/launch/upcoming/?limit=10&mode=detailed`,
+            UPCOMING: `${API_BASE_URL}/launch/upcoming/?limit=${LAUNCHES_LIMIT}&mode=detailed`,
             NEXT: `${API_BASE_URL}/launch/upcoming/?limit=1&mode=detailed`,
-            LAUNCH: (id) => `${API_BASE_URL}/launch/${id}/?mode=detailed`
+            LAUNCH: (id) => `${API_BASE_URL}/launch/${id}/?mode=detailed`,
+            AGENCIES: `${API_BASE_URL}/agencies/?limit=100`
         };
 
-        // Cache for API responses
-        let launchesCache = null;
-        let cacheTimestamp = null;
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+        // ===== STATE MANAGEMENT =====
+        let state = {
+            launches: [],
+            filteredLaunches: [],
+            currentLaunchIndex: 0,
+            countdownInterval: null,
+            isDataLoaded: false,
+            activeFilter: 'all',
+            searchTerm: '',
+            stats: {
+                total: 0,
+                thisMonth: 0,
+                agencies: new Set(),
+                launchSites: new Set()
+            }
+        };
 
-        // DOM Elements
+        // ===== DOM ELEMENTS =====
+        const starsContainer = document.getElementById('starsContainer');
         const countdownContainer = document.getElementById('countdownContainer');
         const launchCardContainer = document.getElementById('launchCardContainer');
         const launchesGrid = document.getElementById('launchesGrid');
@@ -1072,202 +2306,237 @@
         const modalMissionName = document.getElementById('modal-mission-name');
         const modalBody = document.getElementById('modalBody');
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('searchInput');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const autoAdvanceNotice = document.getElementById('autoAdvanceNotice');
+        const statsGrid = document.getElementById('statsGrid');
+        const aboutLink = document.getElementById('aboutLink');
 
-        // Global variables for countdown intervals
-        let countdownIntervals = new Map(); // Store intervals by launch ID
-
-        // Initialize the application
+        // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', init);
 
         async function init() {
-            // Check cache
-            const now = Date.now();
-            if (launchesCache && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
-                console.log('Using cached data');
-                renderPage(launchesCache);
-            } else {
-                console.log('Fetching new data from API');
-                try {
-                    const launches = await fetchLaunches();
-                    launchesCache = launches;
-                    cacheTimestamp = now;
-                    renderPage(launches);
-                } catch (error) {
-                    showError(error);
-                }
+            // Create animated stars
+            createStars();
+            
+            // Show loading state
+            showLoading();
+            
+            try {
+                // Fetch launches data
+                await fetchLaunches();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Render the page
+                renderPage();
+                
+                // Show auto-advance notification
+                showAutoAdvanceNotice();
+            } catch (error) {
+                showError(error);
             }
-
-            // Event listeners
-            closeModal.addEventListener('click', () => {
-                launchModal.style.display = 'none';
-            });
-
-            window.addEventListener('click', (e) => {
-                if (e.target === launchModal) {
-                    launchModal.style.display = 'none';
-                }
-            });
-
-            mobileMenuBtn.addEventListener('click', () => {
-                alert('Mobile menu would open here. In a full implementation, this would show a navigation menu.');
-            });
         }
 
-        // Fetch launches from The Space Devs API
+        // ===== BACKGROUND ANIMATIONS =====
+        function createStars() {
+            const starCount = 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random size between 1-3px
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Random position
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation delay
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                
+                // Random opacity
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // ===== DATA FETCHING =====
         async function fetchLaunches() {
             try {
                 const response = await fetch(API_ENDPOINTS.UPCOMING);
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 const data = await response.json();
-                return data.results;
+                
+                // Filter out launches that have already occurred
+                const now = new Date();
+                state.launches = data.results.filter(launch => {
+                    const launchDate = new Date(launch.net);
+                    return launchDate > now;
+                });
+                
+                // If we have launches, find the first upcoming launch
+                if (state.launches.length > 0) {
+                    // Find the index of the next launch (first launch that hasn't occurred yet)
+                    state.currentLaunchIndex = 0;
+                    
+                    // Calculate stats
+                    calculateStats();
+                    
+                    // Set filtered launches initially to all launches
+                    state.filteredLaunches = [...state.launches];
+                    state.isDataLoaded = true;
+                } else {
+                    throw new Error('No upcoming launches found');
+                }
             } catch (error) {
                 console.error('Error fetching launches:', error);
                 throw error;
             }
         }
 
-        // Fetch a single launch by ID
-        async function fetchLaunchById(id) {
-            try {
-                const response = await fetch(API_ENDPOINTS.LAUNCH(id));
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+        // ===== STATS CALCULATION =====
+        function calculateStats() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            // Reset stats
+            state.stats = {
+                total: state.launches.length,
+                thisMonth: 0,
+                agencies: new Set(),
+                launchSites: new Set()
+            };
+            
+            state.launches.forEach(launch => {
+                // Count launches this month
+                const launchDate = new Date(launch.net);
+                if (launchDate.getMonth() === currentMonth && launchDate.getFullYear() === currentYear) {
+                    state.stats.thisMonth++;
                 }
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Error fetching launch:', error);
-                throw error;
-            }
+                
+                // Collect unique agencies
+                if (launch.launch_service_provider && launch.launch_service_provider.name) {
+                    state.stats.agencies.add(launch.launch_service_provider.name);
+                }
+                
+                // Collect unique launch sites
+                if (launch.pad && launch.pad.location && launch.pad.location.name) {
+                    state.stats.launchSites.add(launch.pad.location.name);
+                }
+            });
         }
 
-        // Render the entire page
-        function renderPage(launches) {
-            if (!launches || launches.length === 0) {
-                showError(new Error('No launch data available'));
-                return;
-            }
-
-            // Get the next launch (first in the array)
-            const nextLaunch = launches[0];
+        // ===== RENDER FUNCTIONS =====
+        function renderPage() {
+            if (!state.isDataLoaded) return;
             
-            // Clear any existing countdown intervals
-            clearAllCountdowns();
+            // Clear any existing countdown interval
+            clearCountdownInterval();
+            
+            // Get the current launch
+            const currentLaunch = state.launches[state.currentLaunchIndex];
             
             // Render countdown
-            renderCountdown(nextLaunch);
+            renderCountdown(currentLaunch);
             
             // Render launch card
-            renderLaunchCard(nextLaunch);
+            renderLaunchCard(currentLaunch);
             
-            // Render upcoming launches grid
-            renderUpcomingLaunches(launches.slice(1)); // Skip the first one (it's in the hero)
+            // Render stats
+            renderStats();
+            
+            // Render filtered launches
+            renderFilteredLaunches();
         }
 
-        // Clear all countdown intervals
-        function clearAllCountdowns() {
-            countdownIntervals.forEach(interval => {
-                clearInterval(interval);
-            });
-            countdownIntervals.clear();
-        }
-
-        // Render countdown timer - FIXED TDZ ISSUE
         function renderCountdown(launch) {
             const launchDate = new Date(launch.net);
             const now = new Date();
             
-            // Store interval ID for this launch
-            let countdownInterval;
-            
-            function updateCountdownDisplay(targetDate, currentDate) {
-                const timeRemaining = targetDate.getTime() - currentDate.getTime();
+            function updateCountdown() {
+                const now = new Date();
+                const timeRemaining = launchDate.getTime() - now.getTime();
                 
-                if (timeRemaining > 0) {
-                    const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-                    
-                    // Format UTC and local time
-                    const utcTimeString = targetDate.toUTCString().replace('GMT', 'UTC');
-                    const localTimeString = targetDate.toLocaleString();
-                    
-                    // Calculate progress (assuming max 30 days countdown)
-                    const maxTime = 30 * 24 * 60 * 60 * 1000;
-                    const timePassed = maxTime - timeRemaining;
-                    const percentage = Math.min(Math.max((timePassed / maxTime) * 100, 0), 100);
-                    
-                    // Update DOM
-                    countdownContainer.innerHTML = `
-                        <div class="countdown-title">Launching In</div>
-                        
-                        <div class="countdown">
-                            <div class="countdown-item">
-                                <div class="countdown-value">${days.toString().padStart(2, '0')}</div>
-                                <div class="countdown-label">Days</div>
-                            </div>
-                            <div class="countdown-item">
-                                <div class="countdown-value">${hours.toString().padStart(2, '0')}</div>
-                                <div class="countdown-label">Hours</div>
-                            </div>
-                            <div class="countdown-item">
-                                <div class="countdown-value">${minutes.toString().padStart(2, '0')}</div>
-                                <div class="countdown-label">Minutes</div>
-                            </div>
-                            <div class="countdown-item">
-                                <div class="countdown-value">${seconds.toString().padStart(2, '0')}</div>
-                                <div class="countdown-label">Seconds</div>
-                            </div>
-                        </div>
-                        
-                        <div class="timezone-info">
-                            <div><i class="fas fa-globe"></i> UTC: <span>${utcTimeString}</span></div>
-                            <div><i class="fas fa-clock"></i> Your Time: <span>${localTimeString}</span></div>
-                        </div>
-                        
-                        <div class="progress-container">
-                            <div class="progress-label">
-                                <span>Time to Launch</span>
-                                <span>${Math.round(percentage)}%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${percentage}%"></div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // Launch has passed
-                    if (countdownInterval) {
-                        clearInterval(countdownInterval);
-                        // Remove from map
-                        countdownIntervals.delete(launch.id);
-                    }
-                    countdownContainer.innerHTML = `
-                        <div class="countdown-title">Launch Status</div>
-                        <div style="text-align: center; padding: 2rem;">
-                            <h3 style="color: var(--success); margin-bottom: 1rem;">🚀 Launch Completed!</h3>
-                            <p>This launch has already occurred. Check upcoming launches below.</p>
-                        </div>
-                    `;
+                // Check if launch has passed
+                if (timeRemaining <= 0) {
+                    // Launch has passed, move to next launch
+                    clearCountdownInterval();
+                    advanceToNextLaunch();
+                    return;
                 }
+                
+                // Calculate time components
+                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                
+                // Format times
+                const utcTimeString = launchDate.toUTCString().replace('GMT', 'UTC');
+                const localTimeString = launchDate.toLocaleString();
+                
+                // Calculate progress percentage (max 60 days countdown)
+                const maxTime = 60 * 24 * 60 * 60 * 1000; // 60 days in milliseconds
+                const timePassed = Math.max(0, maxTime - timeRemaining);
+                const percentage = Math.min(Math.max((timePassed / maxTime) * 100, 0), 100);
+                
+                // Update DOM
+                countdownContainer.innerHTML = `
+                    <div class="countdown-title">
+                        <i class="fas fa-clock"></i> Launching In
+                    </div>
+                    
+                    <div class="countdown">
+                        <div class="countdown-item">
+                            <div class="countdown-value">${days.toString().padStart(2, '0')}</div>
+                            <div class="countdown-label">Days</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value">${hours.toString().padStart(2, '0')}</div>
+                            <div class="countdown-label">Hours</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value">${minutes.toString().padStart(2, '0')}</div>
+                            <div class="countdown-label">Minutes</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value">${seconds.toString().padStart(2, '0')}</div>
+                            <div class="countdown-label">Seconds</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timezone-info">
+                        <div><i class="fas fa-globe"></i> UTC: <span>${utcTimeString}</span></div>
+                        <div><i class="fas fa-clock"></i> Your Time: <span>${localTimeString}</span></div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Time to Launch</span>
+                            <span>${Math.round(percentage)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
             }
             
-            // Calculate initial time difference
-            updateCountdownDisplay(launchDate, now);
+            // Initial update
+            updateCountdown();
             
             // Update every second
-            countdownInterval = setInterval(() => {
-                updateCountdownDisplay(launchDate, new Date());
-            }, 1000);
-            
-            // Store interval in map
-            countdownIntervals.set(launch.id, countdownInterval);
+            state.countdownInterval = setInterval(updateCountdown, 1000);
         }
 
-        // Render launch card with improved button layout
         function renderLaunchCard(launch) {
             const launchDate = new Date(launch.net);
             const formattedDate = launchDate.toLocaleDateString('en-US', {
@@ -1275,14 +2544,17 @@
                 month: 'long',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                timeZoneName: 'short'
             });
             
             // Get rocket name
             const rocketName = launch.rocket?.configuration?.name || 'Unknown Rocket';
+            const rocketFamily = launch.rocket?.configuration?.family || '';
             
             // Get launch site
             const launchSite = launch.pad?.location?.name || 'Unknown Location';
+            const launchPad = launch.pad?.name || '';
             
             // Get mission patch
             const missionPatch = launch.image || 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=400&fit=crop';
@@ -1291,8 +2563,11 @@
             const hasLivestream = launch.vidURLs && launch.vidURLs.length > 0;
             const livestreamUrl = hasLivestream ? launch.vidURLs[0].url : null;
             
+            // Get agency
+            const agency = launch.launch_service_provider?.name || 'Unknown Agency';
+            
             launchCardContainer.innerHTML = `
-                <div class="launch-card">
+                <div class="launch-card fade-in">
                     <div class="launch-card-header">
                         <div class="mission-patch">
                             <img src="${missionPatch}" alt="Mission Patch" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=400&fit=crop';">
@@ -1310,7 +2585,7 @@
                             </div>
                             <div class="detail-content">
                                 <h4>Rocket</h4>
-                                <p id="rocket-name">${rocketName}</p>
+                                <p id="rocket-name">${rocketName}${rocketFamily ? ` (${rocketFamily})` : ''}</p>
                             </div>
                         </div>
                         
@@ -1320,7 +2595,7 @@
                             </div>
                             <div class="detail-content">
                                 <h4>Launch Site</h4>
-                                <p id="launch-site">${launchSite}</p>
+                                <p id="launch-site">${launchSite}${launchPad ? ` - ${launchPad}` : ''}</p>
                             </div>
                         </div>
                         
@@ -1336,11 +2611,11 @@
                         
                         <div class="detail-item">
                             <div class="detail-icon">
-                                <i class="fas fa-tv"></i>
+                                <i class="fas fa-building"></i>
                             </div>
                             <div class="detail-content">
-                                <h4>Live Stream</h4>
-                                <p>${hasLivestream ? 'Available' : 'Not available'}</p>
+                                <h4>Agency</h4>
+                                <p>${agency}</p>
                             </div>
                         </div>
                     </div>
@@ -1369,12 +2644,7 @@
             });
             
             document.getElementById('setReminderBtn').addEventListener('click', () => {
-                const eventTitle = `🚀 ${launch.name} Launch`;
-                const eventDate = new Date(launch.net);
-                const eventTime = eventDate.toISOString().replace(/-|:|\.\d+/g, '');
-                const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${eventTime}/${eventTime}&details=${encodeURIComponent(`Don't miss the ${launch.name} launch!`)}&location=${encodeURIComponent(launchSite)}`;
-                
-                window.open(calendarUrl, '_blank');
+                setReminder(launch);
             });
             
             document.getElementById('viewDetailsBtn').addEventListener('click', () => {
@@ -1382,20 +2652,45 @@
             });
         }
 
-        // Render upcoming launches grid with consistent layout
-        function renderUpcomingLaunches(launches) {
-            if (!launches || launches.length === 0) {
+        function renderStats() {
+            statsGrid.innerHTML = `
+                <div class="stat-card" style="--stat-order: 1">
+                    <div class="stat-value">${state.stats.total}</div>
+                    <div class="stat-label">Total Upcoming</div>
+                </div>
+                <div class="stat-card" style="--stat-order: 2">
+                    <div class="stat-value">${state.stats.thisMonth}</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-card" style="--stat-order: 3">
+                    <div class="stat-value">${state.stats.agencies.size}</div>
+                    <div class="stat-label">Different Agencies</div>
+                </div>
+                <div class="stat-card" style="--stat-order: 4">
+                    <div class="stat-value">${state.stats.launchSites.size}</div>
+                    <div class="stat-label">Launch Sites</div>
+                </div>
+            `;
+        }
+
+        function renderFilteredLaunches() {
+            launchesGrid.innerHTML = '';
+            
+            if (state.filteredLaunches.length === 0) {
                 launchesGrid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #94a3b8;">
-                        <p>No upcoming launches found.</p>
+                    <div style="grid-column: 1/-1; text-align: center; padding: 5rem; color: #94a3b8;">
+                        <i class="fas fa-search" style="font-size: 4rem; margin-bottom: 2rem; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 1.5rem; font-size: 2rem;">No launches found</h3>
+                        <p style="font-size: 1.2rem;">Try changing your filters or search term</p>
                     </div>
                 `;
                 return;
             }
             
-            launchesGrid.innerHTML = '';
+            // Start from index 1 to skip the current launch (index 0)
+            const launchesToShow = state.filteredLaunches.slice(1);
             
-            launches.forEach(launch => {
+            launchesToShow.forEach((launch, index) => {
                 const launchDate = new Date(launch.net);
                 const now = new Date();
                 const timeRemaining = launchDate.getTime() - now.getTime();
@@ -1408,8 +2703,11 @@
                     
                     if (days > 0) {
                         countdownText = `T-${days}d ${hours}h`;
-                    } else {
+                    } else if (hours > 0) {
                         countdownText = `T-${hours}h`;
+                    } else {
+                        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                        countdownText = `T-${minutes}m`;
                     }
                 } else {
                     countdownText = "Launched";
@@ -1433,9 +2731,17 @@
                 // Get image
                 const imageUrl = launch.image || `https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=200&fit=crop&auto=format`;
                 
+                // Get agency for filtering
+                const agency = launch.launch_service_provider?.name || '';
+                
                 // Create launch item
                 const launchItem = document.createElement('div');
                 launchItem.className = 'launch-item';
+                launchItem.style.setProperty('--card-order', index);
+                launchItem.setAttribute('data-agency', agency.toLowerCase());
+                launchItem.setAttribute('data-status', launch.status?.abbrev?.toLowerCase() || 'tbc');
+                launchItem.setAttribute('data-date', launchDate.toISOString().split('T')[0]);
+                
                 launchItem.innerHTML = `
                     <div class="launch-image">
                         <img src="${imageUrl}" alt="${launch.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=200&fit=crop&auto=format';">
@@ -1465,6 +2771,7 @@
                         <div class="launch-countdown">
                             <i class="far fa-clock"></i>
                             <span>${countdownText}</span>
+                            <span style="margin-left: auto; font-size: 0.9rem; color: #64748b;">${agency}</span>
                         </div>
                         
                         <button class="view-details-btn" data-id="${launch.id}">
@@ -1483,7 +2790,7 @@
             });
         }
 
-        // Open modal with launch details
+        // ===== LAUNCH MODAL =====
         async function openLaunchModal(launch) {
             // Show loading state
             modalMissionName.textContent = launch.name;
@@ -1508,7 +2815,6 @@
             }
         }
 
-        // Render launch modal content with improved button layout
         function renderLaunchModal(launch) {
             const launchDate = new Date(launch.net);
             const formattedDate = launchDate.toLocaleDateString('en-US', {
@@ -1516,26 +2822,34 @@
                 month: 'long',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                timeZoneName: 'short'
             });
             
             // Get rocket info
             const rocketName = launch.rocket?.configuration?.name || 'Unknown Rocket';
             const rocketFamily = launch.rocket?.configuration?.family || 'Unknown Family';
+            const rocketDescription = launch.rocket?.configuration?.description || 'No description available.';
             
             // Get launch site info
             const launchSite = launch.pad?.location?.name || 'Unknown Location';
             const launchPad = launch.pad?.name || 'Unknown Pad';
+            const launchSiteDescription = launch.pad?.location?.description || 'No description available.';
             
             // Get mission info
             const missionDescription = launch.mission?.description || 'No description available.';
             const missionType = launch.mission?.type || 'Unknown Type';
+            
+            // Get agency info
+            const agency = launch.launch_service_provider?.name || 'Unknown Agency';
+            const agencyDescription = launch.launch_service_provider?.description || 'No description available.';
             
             // Get images for gallery
             const images = [];
             if (launch.image) images.push(launch.image);
             if (launch.rocket?.configuration?.image_url) images.push(launch.rocket.configuration.image_url);
             if (launch.pad?.map_image) images.push(launch.pad.map_image);
+            if (launch.pad?.location?.map_image) images.push(launch.pad.location.map_image);
             
             // Add some placeholder images if we don't have enough
             while (images.length < 4) {
@@ -1543,49 +2857,49 @@
             }
             
             modalBody.innerHTML = `
-                <div class="modal-section">
+                <div class="modal-section" style="--section-order: 1">
                     <h3><i class="fas fa-info-circle"></i> Mission Description</h3>
                     <p class="mission-description">${missionDescription}</p>
                 </div>
                 
-                <div class="modal-section">
+                <div class="modal-section" style="--section-order: 2">
                     <h3><i class="fas fa-rocket"></i> Launch Details</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
-                            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Rocket</h4>
-                            <p style="font-size: 1.1rem;">${rocketName}</p>
-                            <p style="color: #94a3b8; font-size: 0.9rem;">${rocketFamily}</p>
+                    <div class="detail-cards">
+                        <div class="detail-card">
+                            <h4>Rocket</h4>
+                            <p>${rocketName}</p>
+                            <p class="subtext">${rocketFamily}</p>
                         </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
-                            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Launch Site</h4>
-                            <p style="font-size: 1.1rem;">${launchSite}</p>
-                            <p style="color: #94a3b8; font-size: 0.9rem;">${launchPad}</p>
+                        <div class="detail-card">
+                            <h4>Launch Site</h4>
+                            <p>${launchSite}</p>
+                            <p class="subtext">${launchPad}</p>
                         </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
-                            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Launch Date</h4>
-                            <p style="font-size: 1.1rem;">${formattedDate}</p>
-                            <p style="color: #94a3b8; font-size: 0.9rem;">UTC: ${launchDate.toUTCString()}</p>
+                        <div class="detail-card">
+                            <h4>Launch Date</h4>
+                            <p>${formattedDate}</p>
+                            <p class="subtext">UTC: ${launchDate.toUTCString()}</p>
                         </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
-                            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Mission Type</h4>
-                            <p style="font-size: 1.1rem;">${missionType}</p>
-                            <p style="color: #94a3b8; font-size: 0.9rem;">Status: ${launch.status?.name || 'Unknown'}</p>
+                        <div class="detail-card">
+                            <h4>Agency</h4>
+                            <p>${agency}</p>
+                            <p class="subtext">Status: ${launch.status?.name || 'Unknown'}</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="modal-section">
+                <div class="modal-section" style="--section-order: 3">
                     <h3><i class="fas fa-images"></i> Gallery</h3>
                     <div class="gallery">
-                        ${images.slice(0, 4).map(img => `
+                        ${images.slice(0, 4).map((img, idx) => `
                             <div class="gallery-item">
-                                <img src="${img}" alt="Launch image" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=300&fit=crop&auto=format';">
+                                <img src="${img}" alt="Launch image ${idx + 1}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=300&fit=crop&auto=format';">
                             </div>
                         `).join('')}
                     </div>
                 </div>
                 
-                <div class="modal-section">
+                <div class="modal-section" style="--section-order: 4">
                     <h3><i class="fas fa-share-alt"></i> Share This Launch</h3>
                     <div class="share-buttons">
                         <button class="share-btn share-twitter" id="shareTwitter">
@@ -1603,32 +2917,162 @@
             
             // Add event listeners to share buttons
             document.getElementById('shareTwitter').addEventListener('click', () => {
-                const text = `Check out the ${launch.name} launch on NextLaunch!`;
-                const url = `https://ll.thespacedevs.com/launch/${launch.id}/`;
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                shareOnTwitter(launch);
             });
             
             document.getElementById('shareFacebook').addEventListener('click', () => {
-                const url = `https://ll.thespacedevs.com/launch/${launch.id}/`;
-                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                shareOnFacebook(launch);
             });
             
             document.getElementById('shareWhatsApp').addEventListener('click', () => {
-                const text = `Check out the ${launch.name} launch on NextLaunch!`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                shareOnWhatsApp(launch);
             });
         }
 
-        // Show error message
+        // ===== FEATURE FUNCTIONS =====
+        function advanceToNextLaunch() {
+            if (state.currentLaunchIndex < state.launches.length - 1) {
+                // Move to next launch
+                state.currentLaunchIndex++;
+                
+                // Show notification
+                showNotification(`Advanced to next launch: ${state.launches[state.currentLaunchIndex].name}`);
+                
+                // Re-render the page with new launch
+                renderPage();
+            } else {
+                // No more launches, try to refresh data
+                showNotification('No more upcoming launches. Refreshing data...');
+                refreshData();
+            }
+        }
+
+        function setReminder(launch) {
+            const eventTitle = `🚀 ${launch.name} Launch`;
+            const eventDate = new Date(launch.net);
+            const eventTime = eventDate.toISOString().replace(/-|:|\.\d+/g, '');
+            const launchSite = launch.pad?.location?.name || 'Unknown Location';
+            const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${eventTime}/${eventTime}&details=${encodeURIComponent(`Don't miss the ${launch.name} launch!`)}&location=${encodeURIComponent(launchSite)}`;
+            
+            window.open(calendarUrl, '_blank');
+            
+            // Show confirmation
+            showNotification('Reminder added to your calendar!');
+        }
+
+        function filterLaunches() {
+            let filtered = state.launches;
+            
+            // Apply search filter
+            if (state.searchTerm) {
+                const searchLower = state.searchTerm.toLowerCase();
+                filtered = filtered.filter(launch => 
+                    launch.name.toLowerCase().includes(searchLower) ||
+                    (launch.mission?.description && launch.mission.description.toLowerCase().includes(searchLower)) ||
+                    (launch.rocket?.configuration?.name && launch.rocket.configuration.name.toLowerCase().includes(searchLower)) ||
+                    (launch.launch_service_provider?.name && launch.launch_service_provider.name.toLowerCase().includes(searchLower))
+                );
+            }
+            
+            // Apply category filter
+            if (state.activeFilter !== 'all') {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                filtered = filtered.filter(launch => {
+                    const agency = launch.launch_service_provider?.name || '';
+                    const agencyLower = agency.toLowerCase();
+                    const launchDate = new Date(launch.net);
+                    
+                    switch (state.activeFilter) {
+                        case 'go':
+                            return launch.status?.abbrev === 'Go';
+                        case 'spacex':
+                            return agencyLower.includes('spacex');
+                        case 'nasa':
+                            return agencyLower.includes('nasa');
+                        case 'this-month':
+                            return launchDate.getMonth() === currentMonth && launchDate.getFullYear() === currentYear;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            state.filteredLaunches = filtered;
+            renderFilteredLaunches();
+        }
+
+        function refreshData() {
+            showLoading();
+            fetchLaunches()
+                .then(() => {
+                    renderPage();
+                    showNotification('Data refreshed successfully!');
+                })
+                .catch(error => {
+                    showError(error);
+                });
+        }
+
+        // ===== SHARE FUNCTIONS =====
+        function shareOnTwitter(launch) {
+            const text = `Check out the ${launch.name} launch on NextLaunch!`;
+            const url = `https://ll.thespacedevs.com/launch/${launch.id}/`;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        }
+
+        function shareOnFacebook(launch) {
+            const url = `https://ll.thespacedevs.com/launch/${launch.id}/`;
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        }
+
+        function shareOnWhatsApp(launch) {
+            const text = `Check out the ${launch.name} launch on NextLaunch!`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // ===== HELPER FUNCTIONS =====
+        function clearCountdownInterval() {
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
+        }
+
+        function showLoading() {
+            countdownContainer.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading countdown data...</p>
+                </div>
+            `;
+            
+            launchCardContainer.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading launch information...</p>
+                </div>
+            `;
+            
+            launchesGrid.innerHTML = `
+                <div class="loading" style="grid-column: 1/-1;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading upcoming launches...</p>
+                </div>
+            `;
+        }
+
         function showError(error) {
             console.error('Application error:', error);
             
             countdownContainer.innerHTML = `
-                <div style="text-align: center; padding: 2rem; color: var(--danger);">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <h3>Error Loading Data</h3>
-                    <p>${error.message || 'Failed to load launch data from API.'}</p>
-                    <button id="retryBtn" class="btn btn-primary" style="margin-top: 1rem;">
+                <div style="text-align: center; padding: 4rem; color: var(--danger);">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 4rem; margin-bottom: 2rem; animation: pulse 2s infinite;"></i>
+                    <h3 style="margin-bottom: 1.5rem; font-size: 2rem;">Error Loading Data</h3>
+                    <p style="margin-bottom: 2rem; font-size: 1.2rem;">${error.message || 'Failed to load launch data from API.'}</p>
+                    <button id="retryBtn" class="btn btn-primary" style="max-width: 250px; margin: 0 auto;">
                         <i class="fas fa-redo"></i> Retry
                     </button>
                 </div>
@@ -1638,7 +3082,164 @@
             launchesGrid.innerHTML = '';
             
             document.getElementById('retryBtn').addEventListener('click', () => {
-                location.reload();
+                refreshData();
+            });
+        }
+
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'auto-advance-notice show';
+            notification.style.bottom = '2.5rem';
+            notification.style.right = '2.5rem';
+            notification.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Notification</strong>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 4 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 600);
+            }, 4000);
+        }
+
+        function showAutoAdvanceNotice() {
+            autoAdvanceNotice.classList.add('show');
+            
+            // Hide after 6 seconds
+            setTimeout(() => {
+                autoAdvanceNotice.classList.remove('show');
+            }, 6000);
+        }
+
+        async function fetchLaunchById(id) {
+            try {
+                const response = await fetch(API_ENDPOINTS.LAUNCH(id));
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching launch:', error);
+                throw error;
+            }
+        }
+
+        // ===== EVENT LISTENERS SETUP =====
+        function setupEventListeners() {
+            // Modal close button
+            closeModal.addEventListener('click', () => {
+                launchModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === launchModal) {
+                    launchModal.style.display = 'none';
+                }
+            });
+
+            // Mobile menu button
+            mobileMenuBtn.addEventListener('click', () => {
+                alert('NextLaunch Mobile Menu\n\nNavigate to:\n• Home (Current Section)\n• Upcoming Launches\n• API Documentation\n• About Page');
+            });
+
+            // Filter buttons
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    button.classList.add('active');
+                    
+                    // Update active filter
+                    state.activeFilter = button.getAttribute('data-filter');
+                    
+                    // Apply filters
+                    filterLaunches();
+                });
+            });
+
+            // Search input
+            searchInput.addEventListener('input', (e) => {
+                state.searchTerm = e.target.value;
+                filterLaunches();
+            });
+
+            // Load more/refresh button
+            loadMoreBtn.addEventListener('click', refreshData);
+
+            // About link
+            aboutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const aboutMessage = `🚀 NextLaunch Ultimate v3.0 🚀
+
+🌟 FEATURES:
+• Auto-advance to next launch after countdown completion
+• 25 upcoming launches displayed with real-time data
+• Advanced filtering (All, GO, SpaceX, NASA, This Month)
+• Real-time statistics dashboard
+• Beautiful 3D animations and floating effects
+• Animated star background with twinkling effect
+• Enhanced modal with detailed launch information
+• Responsive design for all devices
+• Share launches on social media
+• Set calendar reminders
+
+📡 DATA SOURCE: The Space Devs API
+⚡ PERFORMANCE: Optimized for smooth animations
+🎨 DESIGN: Space-themed with gradient effects
+
+Developed by Space Enthusiasts for Rocket Launch Tracking`;
+                alert(aboutMessage);
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Escape key closes modal
+                if (e.key === 'Escape' && launchModal.style.display === 'flex') {
+                    launchModal.style.display = 'none';
+                }
+                
+                // Ctrl/Cmd + F focuses search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+                
+                // Ctrl/Cmd + R refreshes data
+                if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                    e.preventDefault();
+                    refreshData();
+                }
+            });
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
             });
         }
     </script>
